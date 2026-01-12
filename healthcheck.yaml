@@ -1,0 +1,56 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pod-status-check
+  namespace: kuberhealthy
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-status-check
+  namespace: kube-system
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-status-check
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pod-status-check
+subjects:
+  - kind: ServiceAccount
+    name: pod-status-check
+    namespace: kuberhealthy
+---
+apiVersion: kuberhealthy.github.io/v2
+kind: HealthCheck
+metadata:
+  name: pod-status-check
+  namespace: kuberhealthy
+spec:
+  runInterval: 5m
+  timeout: 10m
+  podSpec:
+    spec:
+      serviceAccountName: pod-status-check
+      containers:
+        - name: pod-status-check
+          image: kuberhealthy/pod-status-check:sha-<short-sha>
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TARGET_NAMESPACE
+              value: "kube-system"
+            - name: SKIP_DURATION
+              value: "10m"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 50Mi
+      restartPolicy: Never
