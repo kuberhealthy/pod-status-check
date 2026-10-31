@@ -42,7 +42,7 @@ spec:
       serviceAccountName: pod-status-check
       containers:
         - name: pod-status-check
-          image: ghcr.io/kuberhealthy/pod-status-check:v0.1.0
+          image: docker.io/kuberhealthy/pod-status-check:v0.1.1
           imagePullPolicy: IfNotPresent
           env:
             - name: TARGET_NAMESPACE
